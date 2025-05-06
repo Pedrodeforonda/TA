@@ -72,7 +72,7 @@ export default function FaceRecognitionPage() {
                             type="file"
                             ref={fileInputRef}
                             onChange={handleFileUpload}
-                            accept=".jpg, .jpeg, .png, .gif, .webp"
+                            accept="image/jpeg, image/png, image/gif, image/webp"
                             multiple
                             className="hidden"
                         />
