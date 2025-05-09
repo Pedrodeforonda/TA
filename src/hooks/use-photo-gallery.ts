@@ -81,24 +81,13 @@ export function usePhotoGallery() {
             setUploadQueue(prev => prev.slice(1));
             
             // Si la cola está vacía después de esta subida, mostrar mensaje de éxito
-    if (uploadQueue.length === 1) {
-        // Verificar cuántas fotos se procesaron en total
-        const totalProcessedPhotos = photos.filter(p => p.status === 'uploaded').length;
-        
-        if (totalProcessedPhotos === 1) {
-            toast({
-                title: "Foto subida",
-                description: "La foto ha sido procesada correctamente",
-                variant: "default"
-            });
-        } else {
-            toast({
-                title: "Todas las fotos subidas",
-                description: `Se han procesado ${totalProcessedPhotos} fotos correctamente`,
-                variant: "default"
-            });
-        }
-    }
+            if (uploadQueue.length === 1) {        
+                toast({
+                    title: "Todas las fotos subidas",
+                    description: `Se han procesado todas las fotos correctamente`,
+                    variant: "default"
+                });
+            }
             
         } catch (error) {
             console.error("Error al subir la foto:", error);
