@@ -1,8 +1,9 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Trash2, AlertCircle } from "lucide-react"
+import { LoadingIndicator } from "./loading-indicator"
+import type { PhotoData } from "@/hooks/use-photo-gallery"
 
 interface PhotoGalleryProps {
-    photos: string[]
+    photos: PhotoData[]
     currentPhotoIndex: number
     onPrevious: () => void
     onNext: () => void
@@ -14,14 +15,35 @@ export function PhotoGallery({ photos, currentPhotoIndex, onPrevious, onNext, on
         return null
     }
 
+    const currentPhoto = photos[currentPhotoIndex];
+
     return (
         <div className="relative w-full h-full">
             <div className="absolute inset-0 flex items-center justify-center">
                 <img
-                    src={photos[currentPhotoIndex] || "/placeholder.svg"}
+                    src={currentPhoto.url || "/placeholder.svg"}
                     alt={`Foto ${currentPhotoIndex + 1}`}
                     className="max-w-full max-h-full object-contain"
                 />
+                
+                {/* Indicadores de estado */}
+                {currentPhoto.status === 'uploading' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <LoadingIndicator 
+                        message="Detectando caras..." 
+                        size="xl" 
+                        textClass="text-white text-lg font-medium mt-4"
+                        spinnerClass="text-white"
+                    />
+                </div>
+                )}
+                
+                {currentPhoto.status === 'error' && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-destructive/80 text-white px-4 py-2 rounded-lg flex items-center">
+                        <AlertCircle className="h-5 w-5 mr-2" />
+                        <span>Error: {currentPhoto.error || 'No se pudo subir la imagen'}</span>
+                    </div>
+                )}
             </div>
 
             {/* Botón para eliminar la foto actual */}

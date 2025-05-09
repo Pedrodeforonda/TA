@@ -1,13 +1,18 @@
 import type React from "react"
-
 import { Camera } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { usePhotoGallery } from "@/hooks/use-photo-gallery"
 import { PhotoGallery } from "@/components/photo-gallery"
 import { ActionButtons } from "@/components/action-buttons"
+import { recognizeFaces, RecognitionResponse } from "@/services/endpoints/recognition"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
+import { LoadingIndicator } from "@/components/loading-indicator"
 
 export default function FaceRecognitionPage() {
-    const { photos, currentPhotoIndex, addPhoto, removePhoto, goToPreviousPhoto, goToNextPhoto, fileInputRef } = usePhotoGallery()
+    const { photos, currentPhotoIndex, addPhoto, removePhoto, goToPreviousPhoto, goToNextPhoto, getUploadedPhotosFormData, fileInputRef } = usePhotoGallery()
+    const [recognitionLoading, setRecognitionLoading] = useState(false)
+    const { toast } = useToast()
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files
@@ -26,12 +31,27 @@ export default function FaceRecognitionPage() {
 
     const sendPhotosForFaceRecognition = async () => {
         try {
-            // Aquí iría la lógica para enviar las fotos al backend
-            console.log("Enviando fotos para reconocimiento facial:", photos)
-            alert("Fotos enviadas para reconocimiento facial")
+            setRecognitionLoading(true)
+            const formData = await getUploadedPhotosFormData();
+
+            if (!formData) {
+                setRecognitionLoading(false);
+                return;
+            }
+
+            const result: RecognitionResponse = await recognizeFaces(formData)
+            
+            // Mostrar lista de asistencia
+            
         } catch (error) {
-            console.error("Error al enviar fotos:", error)
-            alert("Error al enviar las fotos")
+            console.error("Error en el reconocimiento facial:", error)
+            toast({
+                title: "Error en el reconocimiento",
+                description: error instanceof Error ? error.message : "Ocurrió un error al procesar las fotos",
+                variant: "destructive"
+            })
+        } finally {
+            setRecognitionLoading(false)
         }
     }
 
@@ -60,19 +80,30 @@ export default function FaceRecognitionPage() {
                             )}
                         </div>
 
-                        {/* Controles de cámara */}
+                        {/* Botones principales */}
                         <ActionButtons
                             hasPhotos={photos.length > 0}
                             fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
                             onRecognizeFaces={sendPhotosForFaceRecognition}
-                            onAddPhotos={(newPhotos) => newPhotos.forEach(photo => addPhoto(photo))}
                         />
+
+                        {/* Indicador de carga para el proceso de reconocimiento */}
+                        {recognitionLoading && (
+                            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+                            <LoadingIndicator 
+                                message="Procesando reconocimiento facial..." 
+                                size="xl" 
+                                textClass="text-white text-xl font-bold mt-6 max-w-[80%] text-center break-words"
+                                spinnerClass="text-white"
+                            />
+                        </div>
+                        )}
 
                         <input
                             type="file"
                             ref={fileInputRef}
                             onChange={handleFileUpload}
-                            accept="image/jpeg, image/png, image/gif, image/webp"
+                            accept="image/jpeg, image/png, image/webp"
                             multiple
                             className="hidden"
                         />
