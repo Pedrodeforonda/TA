@@ -76,7 +76,7 @@ export function SubjectDetailPage({ subject, onBack }: SubjectDetailPageProps) {
       <Tabs defaultValue="professors" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="professors">Profesores</TabsTrigger>
-          <TabsTrigger value="students">Alumnos</TabsTrigger>
+          <TabsTrigger value="students">Estudiantes</TabsTrigger>
           <TabsTrigger value="attendance">Historial de Asistencias</TabsTrigger>
         </TabsList>
 
@@ -117,10 +117,10 @@ export function SubjectDetailPage({ subject, onBack }: SubjectDetailPageProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Alumnos Inscriptos ({students.length})</span>
+                <span>Estudiantes Inscriptos ({students.length})</span>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Alumno
+                  Agregar Estudiante
                 </Button>
               </CardTitle>
             </CardHeader>
