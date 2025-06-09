@@ -21,6 +21,7 @@ import {
   User,
   GraduationCap,
   Upload,
+  ArrowUpDown,
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Notifications, type Notification } from "../ui/notifications"
@@ -29,10 +30,12 @@ import { LowAttendancePage } from "../metrics/low-attendance-page"
 import { StudentsAtRiskPage } from "../metrics/students-at-risk-page"
 import { ProfessorInvitationsPage } from "../invitations/professor-invitations-page"
 import { StudentInvitationsPage } from "../invitations/student-invitations-page"
-import { AttendanceBySubjectChart } from "../charts/attendance-by-subject-chart"
 import { AttendanceDistributionChart } from "../charts/attendance-distribution-chart"
+import { AttendanceBySubjectTimeChart } from "../charts/attendance-by-subject-time-chart"
+import { AttendanceDistributionBySubjectChart } from "../charts/attendance-distribution-by-subject-chart"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { StudentProfilePage } from "../students/student-profile-page"
 
 interface InstitutionLayoutProps {
   institutionName: string
@@ -44,6 +47,7 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
   const [activeTab, setActiveTab] = useState("materias")
   const [currentPage, setCurrentPage] = useState("dashboard")
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [notificationCount, setNotificationCount] = useState(3)
   const [searchTerm, setSearchTerm] = useState("")
@@ -51,6 +55,7 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
   const [studentEmail, setStudentEmail] = useState("")
   const [participantFilter, setParticipantFilter] = useState("todos")
   const [participantSearch, setParticipantSearch] = useState("")
+  const [attendanceSortOrder, setAttendanceSortOrder] = useState<"asc" | "desc" | null>(null)
 
   // Mock data
   const subjects = [
@@ -88,33 +93,64 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
 
   // Mock data para participantes
   const participants = [
-    { id: 1, name: "Juan Pérez", email: "juan.perez@universidad.edu", role: "profesor", department: "Ingeniería" },
-    { id: 2, name: "María García", email: "maria.garcia@universidad.edu", role: "profesor", department: "Matemáticas" },
-    { id: 3, name: "Carlos López", email: "carlos.lopez@universidad.edu", role: "profesor", department: "Física" },
+    { id: 1, name: "Juan Pérez", email: "juan.perez@universidad.edu", role: "profesor" },
+    { id: 2, name: "María García", email: "maria.garcia@universidad.edu", role: "profesor" },
+    { id: 3, name: "Carlos López", email: "carlos.lopez@universidad.edu", role: "profesor" },
+    { id: 4, name: "Ana Martínez", email: "ana.martinez@mail.com", role: "estudiante" },
+    { id: 5, name: "Pedro Rodríguez", email: "pedro.rodriguez@mail.com", role: "estudiante" },
+    { id: 6, name: "Sofía López", email: "sofia.lopez@mail.com", role: "estudiante" },
+    { id: 7, name: "Diego Fernández", email: "diego.fernandez@mail.com", role: "estudiante" },
+    { id: 8, name: "Carmen Ruiz", email: "carmen.ruiz@mail.com", role: "estudiante" },
+    { id: 9, name: "Roberto Silva", email: "roberto.silva@universidad.edu", role: "profesor" },
+    { id: 10, name: "Elena Gómez", email: "elena.gomez@mail.com", role: "estudiante" },
+  ]
+
+  // Mock data para estudiantes en riesgo
+  const studentsAtRisk = [
     {
-      id: 4,
+      id: 1,
       name: "Ana Martínez",
       email: "ana.martinez@mail.com",
-      role: "estudiante",
-      career: "Ingeniería Informática",
+      subject: "Física I",
+      overallAttendance: 67,
+      absences: 8,
+      riskLevel: "alto",
+    },
+    {
+      id: 2,
+      name: "Pedro Rodríguez",
+      email: "pedro.rodriguez@mail.com",
+      subject: "Álgebra I",
+      overallAttendance: 71,
+      absences: 7,
+      riskLevel: "medio",
+    },
+    {
+      id: 3,
+      name: "Sofía López",
+      email: "sofia.lopez@mail.com",
+      subject: "Química General",
+      overallAttendance: 71,
+      absences: 6,
+      riskLevel: "medio",
+    },
+    {
+      id: 4,
+      name: "Diego Fernández",
+      email: "diego.fernandez@mail.com",
+      subject: "Matemática II",
+      overallAttendance: 72,
+      absences: 3,
+      riskLevel: "bajo",
     },
     {
       id: 5,
-      name: "Pedro Rodríguez",
-      email: "pedro.rodriguez@mail.com",
-      role: "estudiante",
-      career: "Ingeniería Civil",
-    },
-    { id: 6, name: "Sofía López", email: "sofia.lopez@mail.com", role: "estudiante", career: "Matemáticas" },
-    { id: 7, name: "Diego Fernández", email: "diego.fernandez@mail.com", role: "estudiante", career: "Física" },
-    { id: 8, name: "Carmen Ruiz", email: "carmen.ruiz@mail.com", role: "estudiante", career: "Química" },
-    { id: 9, name: "Roberto Silva", email: "roberto.silva@universidad.edu", role: "profesor", department: "Química" },
-    {
-      id: 10,
-      name: "Elena Gómez",
-      email: "elena.gomez@mail.com",
-      role: "estudiante",
-      career: "Ingeniería Informática",
+      name: "Carmen Ruiz",
+      email: "carmen.ruiz@mail.com",
+      subject: "Programación I",
+      overallAttendance: 65,
+      absences: 9,
+      riskLevel: "alto",
     },
   ]
 
@@ -179,11 +215,35 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
     input.click()
   }
 
-  const filteredSubjects = subjects.filter(
-    (subject) =>
-      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subject.professor.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const toggleAttendanceSort = () => {
+    if (attendanceSortOrder === null) {
+      setAttendanceSortOrder("desc")
+    } else if (attendanceSortOrder === "desc") {
+      setAttendanceSortOrder("asc")
+    } else {
+      setAttendanceSortOrder(null)
+    }
+  }
+
+  const filteredSubjects = subjects
+    .filter(
+      (subject) =>
+        subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        subject.professor.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .sort((a, b) => {
+      if (attendanceSortOrder === "asc") {
+        return a.attendance - b.attendance
+      } else if (attendanceSortOrder === "desc") {
+        return b.attendance - a.attendance
+      }
+      return 0
+    })
+
+  const handleViewStudentProfile = (student: any) => {
+    setSelectedStudent(student)
+    setCurrentPage("student-profile")
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -256,7 +316,9 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
 
         {currentPage === "low-attendance" && <LowAttendancePage onBack={() => setCurrentPage("dashboard")} />}
 
-        {currentPage === "students-at-risk" && <StudentsAtRiskPage onBack={() => setCurrentPage("dashboard")} />}
+        {currentPage === "students-at-risk" && (
+          <StudentsAtRiskPage onBack={() => setCurrentPage("dashboard")} onViewProfile={handleViewStudentProfile} />
+        )}
 
         {currentPage === "professor-invitations" && (
           <ProfessorInvitationsPage onBack={() => setCurrentPage("dashboard")} />
@@ -264,12 +326,16 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
 
         {currentPage === "student-invitations" && <StudentInvitationsPage onBack={() => setCurrentPage("dashboard")} />}
 
+        {currentPage === "student-profile" && selectedStudent && (
+          <StudentProfilePage student={selectedStudent} onBack={() => setCurrentPage("dashboard")} />
+        )}
+
         {/* Dashboard principal */}
         {currentPage === "dashboard" && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Materias Tab */}
             <TabsContent value="materias" className="space-y-6">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -279,7 +345,17 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
                     className="pl-10"
                   />
                 </div>
-                <Button onClick={onCreateSubject}>
+                <Button
+                  variant="outline"
+                  onClick={toggleAttendanceSort}
+                  className="flex items-center space-x-2 whitespace-nowrap"
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                  <span>
+                    Asistencia {attendanceSortOrder === "asc" ? "↑" : attendanceSortOrder === "desc" ? "↓" : ""}
+                  </span>
+                </Button>
+                <Button onClick={onCreateSubject} className="whitespace-nowrap">
                   <Plus className="h-4 w-4 mr-2" />
                   Nueva Materia
                 </Button>
@@ -324,20 +400,19 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Clases con Baja Participación</CardTitle>
+                    <CardTitle className="text-sm font-medium">Materias con Baja Participación</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-red-600">4</div>
-                    <p className="text-xs text-gray-500">{"<60% asistencia"}</p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() => setCurrentPage("low-attendance")}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Visualizar
-                    </Button>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-red-600">4</div>
+                        <p className="text-xs text-gray-500">{"<60% asistencia"}</p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setCurrentPage("low-attendance")}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -346,24 +421,24 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
                     <CardTitle className="text-sm font-medium">Estudiantes en Riesgo</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-orange-600">5</div>
-                    <p className="text-xs text-gray-500">{"<75% asistencia"}</p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() => setCurrentPage("students-at-risk")}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Visualizar
-                    </Button>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-orange-600">5</div>
+                        <p className="text-xs text-gray-500">{"<75% asistencia"}</p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => setCurrentPage("students-at-risk")}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Charts Section */}
               <div className="space-y-6">
-                <AttendanceBySubjectChart />
+                <AttendanceBySubjectTimeChart />
+                <AttendanceDistributionBySubjectChart />
                 <AttendanceDistributionChart />
               </div>
             </TabsContent>
@@ -472,7 +547,6 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
                         <TableHead>Nombre</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Rol</TableHead>
-                        <TableHead>Departamento/Carrera</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -492,9 +566,6 @@ export function InstitutionLayout({ institutionName, onLogout, onCreateSubject }
                                 Estudiante
                               </Badge>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            {participant.role === "profesor" ? participant.department : participant.career}
                           </TableCell>
                         </TableRow>
                       ))}

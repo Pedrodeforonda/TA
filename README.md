@@ -35,7 +35,9 @@ Sigue estos pasos para configurar el proyecto en tu entorno local:
 
 ### Desarrollo
 
-Para ejecutar la aplicación en modo desarrollo:
+Para ejecutar la aplicación en modo desarrollo: 
+
+cd academic-coordinator-platform
 
 ```bash
 npm run dev

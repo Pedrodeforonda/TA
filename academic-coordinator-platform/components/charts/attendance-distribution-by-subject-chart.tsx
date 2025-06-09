@@ -4,26 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 const data = [
-  { range: "0-10%", students: 2 },
-  { range: "10-20%", students: 1 },
-  { range: "20-30%", students: 0 },
-  { range: "30-40%", students: 1 },
-  { range: "40-50%", students: 3 },
-  { range: "50-60%", students: 4 },
-  { range: "60-70%", students: 8 },
-  { range: "70-80%", students: 15 },
-  { range: "80-90%", students: 25 },
-  { range: "90-100%", students: 18 },
+  { range: "0-10%", subjects: 0 },
+  { range: "10-20%", subjects: 0 },
+  { range: "20-30%", subjects: 0 },
+  { range: "30-40%", subjects: 1 },
+  { range: "40-50%", subjects: 2 },
+  { range: "50-60%", subjects: 3 },
+  { range: "60-70%", subjects: 5 },
+  { range: "70-80%", subjects: 8 },
+  { range: "80-90%", subjects: 6 },
+  { range: "90-100%", subjects: 3 },
 ]
 
-export function AttendanceDistributionChart() {
+export function AttendanceDistributionBySubjectChart() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded-lg shadow-lg">
           <p className="font-medium">Rango: {label}</p>
           <p className="text-sm">
-            <span className="text-blue-600">Estudiantes: </span>
+            <span className="text-blue-600">Materias: </span>
             {payload[0].value}
           </p>
         </div>
@@ -35,8 +35,8 @@ export function AttendanceDistributionChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Distribución de Asistencia General por Estudiantes</CardTitle>
-        <p className="text-sm text-gray-600">Número de estudiantes por rango de asistencia</p>
+        <CardTitle>Distribución de Asistencia General por Materias</CardTitle>
+        <p className="text-sm text-gray-600">Número de materias por rango de asistencia</p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -45,7 +45,7 @@ export function AttendanceDistributionChart() {
             <XAxis dataKey="range" fontSize={12} />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="students" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="subjects" fill="#22c55e" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

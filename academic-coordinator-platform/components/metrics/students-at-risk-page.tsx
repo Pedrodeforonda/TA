@@ -5,65 +5,76 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Mail } from "lucide-react"
+import { Search, Eye } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface StudentsAtRiskPageProps {
   onBack: () => void
+  onViewProfile: (student: any) => void
 }
 
-export function StudentsAtRiskPage({ onBack }: StudentsAtRiskPageProps) {
+export function StudentsAtRiskPage({ onBack, onViewProfile }: StudentsAtRiskPageProps) {
   const [searchTerm, setSearchTerm] = useState("")
 
   const studentsAtRisk = [
     {
+      id: 1,
       name: "Ana Martínez",
       email: "ana.martinez@mail.com",
-      subject: "Física I",
-      overallAttendance: 67,
-      absences: 8,
+      riskLevel: "alto",
     },
     {
+      id: 2,
       name: "Pedro Rodríguez",
       email: "pedro.rodriguez@mail.com",
-      subject: "Álgebra I",
-      overallAttendance: 71,
-      absences: 7,
+      riskLevel: "medio",
     },
     {
+      id: 3,
       name: "Sofía López",
       email: "sofia.lopez@mail.com",
-      subject: "Química General",
-      overallAttendance: 71,
-      absences: 6,
+      riskLevel: "medio",
     },
     {
+      id: 4,
       name: "Diego Fernández",
       email: "diego.fernandez@mail.com",
-      subject: "Matemática II",
-      overallAttendance: 72,
-      absences: 3,
+      riskLevel: "bajo",
     },
     {
+      id: 5,
       name: "Carmen Ruiz",
       email: "carmen.ruiz@mail.com",
-      subject: "Programación I",
-      overallAttendance: 65,
-      absences: 9,
+      riskLevel: "alto",
     },
   ]
 
   const filteredStudents = studentsAtRisk.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.subject.toLowerCase().includes(searchTerm.toLowerCase())
+      student.email.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesSearch
   })
 
-  const handleNotify = (studentName: string, email: string) => {
-    // Aquí iría la lógica para enviar el email automático
-    alert(`Notificación enviada a ${studentName} (${email})`)
+  const getRiskBadge = (riskLevel: string) => {
+    switch (riskLevel) {
+      case "alto":
+        return <Badge variant="destructive">Alto</Badge>
+      case "medio":
+        return (
+          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+            Medio
+          </Badge>
+        )
+      case "bajo":
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+            Bajo
+          </Badge>
+        )
+      default:
+        return null
+    }
   }
 
   return (
@@ -98,42 +109,24 @@ export function StudentsAtRiskPage({ onBack }: StudentsAtRiskPageProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Estudiante</TableHead>
-                <TableHead>Materia</TableHead>
-                <TableHead>Asistencia</TableHead>
-                <TableHead>Faltas</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead>Riesgo</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStudents.map((student, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} className="hover:bg-gray-50">
                   <TableCell>
                     <div>
                       <p className="font-medium">{student.name}</p>
                       <p className="text-sm text-gray-600">{student.email}</p>
                     </div>
                   </TableCell>
+                  <TableCell>{getRiskBadge(student.riskLevel)}</TableCell>
                   <TableCell>
-                    <span className="text-sm">{student.subject}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm font-medium">{student.overallAttendance}%</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm font-medium text-red-600">{student.absences}</span>
-                  </TableCell>
-                  <TableCell>
-                    {student.absences >= 4 ? (
-                      <Badge variant="destructive">Libre</Badge>
-                    ) : (
-                      <Badge variant="secondary">Regular</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline" onClick={() => handleNotify(student.name, student.email)}>
-                      <Mail className="h-4 w-4 mr-1" />
-                      Notificar
+                    <Button size="sm" variant="outline" onClick={() => onViewProfile(student)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver Perfil
                     </Button>
                   </TableCell>
                 </TableRow>
